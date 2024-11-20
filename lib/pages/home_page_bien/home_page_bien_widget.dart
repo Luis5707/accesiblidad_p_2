@@ -13,6 +13,14 @@ import 'package:provider/provider.dart';
 import 'home_page_bien_model.dart';
 export 'home_page_bien_model.dart';
 
+// Imports para la lectura de jsons
+import 'dart:convert';
+import 'dart:io';
+import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart'; 
+import 'package:shared_preferences/shared_preferences.dart';
+
+
 class HomePageBienWidget extends StatefulWidget {
   const HomePageBienWidget({super.key});
 
@@ -24,6 +32,19 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
   late HomePageBienModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  
+  // Método para cargar y guardar el JSON en la variable
+  Future<void> cargarJson(String path) async {
+    try {
+      // Cargar el contenido del archivo JSON como una cadena
+      String jsonString = await rootBundle.loadString(path);
+
+      // Decodificar la cadena JSON a un mapa
+      _model.jsonData = json.decode(jsonString);
+    } catch (e) {
+      print("Error al cargar el JSON: $e");
+    }
+  }
 
   @override
   void initState() {
@@ -565,7 +586,7 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
                       ),
                       Align(
                         alignment: AlignmentDirectional(0.0, 0.0),
-                        child: Text(
+                        child: Text(    
                           'Reserva',
                           style:
                               FlutterFlowTheme.of(context).bodyMedium.override(
@@ -599,8 +620,18 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
                                           _model.salaFormValueController ??=
                                               FormFieldController<String>(null),
                                       options: ['Sala 1', 'Sala 2', 'Sala 3'],
-                                      onChanged: (val) => safeSetState(
-                                          () => _model.salaFormValue = val),
+                                      onChanged: (val) async {
+                                        safeSetState(() {
+                                          _model.salaFormValue = val;
+                                        });
+                                        // Verifica las condiciones y llama a cargarJson
+                                        if ((_model.salaFormValue == "Sala 1" || 
+                                            _model.salaFormValue == "Sala 2" || 
+                                            _model.salaFormValue == "Sala 3") &&
+                                            (_model.datePicked != null)) {
+                                          await cargarJson("jsons/reservas_salas.json");
+                                        }
+                                      },
                                       width: 145.0,
                                       height: 40.0,
                                       textStyle: FlutterFlowTheme.of(context)
@@ -686,6 +717,13 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
                                             _datePickedDate.day,
                                           );
                                         });
+                                        // Verifica las condiciones y llama a cargarJson
+                                        if ((_model.salaFormValue == "Sala 1" || 
+                                            _model.salaFormValue == "Sala 2" || 
+                                            _model.salaFormValue == "Sala 3") &&
+                                            (_model.datePicked != null)) {
+                                          await cargarJson("jsons/reservas_salas.json");
+                                        }
                                       }
                                       FFAppState().selectedDate =
                                           _model.datePicked;
@@ -784,53 +822,34 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
                                                     verticalDirection:
                                                         VerticalDirection.down,
                                                     clipBehavior: Clip.none,
-                                                    children: [
-                                                      FFButtonWidget(
-                                                        onPressed: () {
-                                                          print(
-                                                              'Button pressed ...');
-                                                        },
-                                                        text: '12:30',
-                                                        options:
-                                                            FFButtonOptions(
-                                                          height: 40.0,
-                                                          padding:
-                                                              EdgeInsetsDirectional
-                                                                  .fromSTEB(
-                                                                      16.0,
-                                                                      0.0,
-                                                                      16.0,
-                                                                      0.0),
-                                                          iconPadding:
-                                                              EdgeInsetsDirectional
-                                                                  .fromSTEB(
-                                                                      0.0,
-                                                                      0.0,
-                                                                      0.0,
-                                                                      0.0),
-                                                          color:
-                                                              Color(0xFFCDCDCD),
-                                                          textStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .titleSmall
-                                                                  .override(
-                                                                    fontFamily:
-                                                                        'Inter Tight',
-                                                                    color: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .primaryText,
-                                                                    letterSpacing:
-                                                                        0.0,
+                                                    children: (_model.jsonData == null || 
+                                                                _model.jsonData?[dateTimeFormat("d/M/y", _model.datePicked).toString()] == null || 
+                                                                _model.jsonData?[dateTimeFormat("d/M/y", _model.datePicked).toString()][_model.salaFormValue] == null)
+                                                          ? [] // Si _model.jsonData o los datos relacionados son nulos, no hay hijos
+                                                          : _model.jsonData?[dateTimeFormat("d/M/y", _model.datePicked).toString()][_model.salaFormValue]
+                                                              .entries
+                                                              .where((entry) => entry.value == "Si") // Filtrar los casos con "Si"
+                                                              .map<Widget>((entry) {
+                                                                bool isPressed = _model.buttonPressed[entry.key] ?? false;
+
+                                                                return ElevatedButton(
+                                                                  onPressed: () {
+                                                                    setState(() {
+                                                                      // Cambiar el estado de presionado
+                                                                      _model.buttonPressed[entry.key] = !isPressed;
+                                                                    });
+                                                                  },
+                                                                  style: ElevatedButton.styleFrom(
+                                                                    backgroundColor: isPressed
+                                                                        ? Colors.grey // Color oscuro cuando se presiona
+                                                                        : FlutterFlowTheme.of(context).primary, // Color de fondo normal
+                                                                    foregroundColor: Colors.white, // Color del texto
+                                                                    elevation: 5, // Agregar elevación para efecto de sombreado
+                                                                    splashFactory: InkSplash.splashFactory, // Efecto de la pulsación
                                                                   ),
-                                                          elevation: 0.0,
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(
-                                                                      8.0),
-                                                        ),
-                                                      ),
-                                                    ],
+                                                                  child: Text(entry.key), // Mostrar la hora como texto del botón
+                                                                );
+                                                              }).toList(),
                                                   ),
                                                 ),
                                               ],
@@ -860,6 +879,8 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
                                 _model.surnameFormTextController?.clear();
                                 _model.emailFormTextController?.clear();
                                 _model.phoneFormTextController?.clear();
+                                _model.datePicked = null;
+                                _model.salaFormValue = null;
                               });
                               FFAppState().selectedDate = null;
                               safeSetState(() {});
@@ -888,22 +909,38 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
                           ),
                           FFButtonWidget(
                             onPressed: () async {
-                              await showModalBottomSheet(
-                                isScrollControlled: true,
-                                backgroundColor: Colors.transparent,
-                                enableDrag: false,
+                              showDialog(
                                 context: context,
-                                builder: (context) {
-                                  return GestureDetector(
-                                    onTap: () =>
-                                        FocusScope.of(context).unfocus(),
-                                    child: Padding(
-                                      padding: MediaQuery.viewInsetsOf(context),
-                                      child: ReservaPopUpWidget(),
-                                    ),
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: Text('Reserva de Sala'),
+                                    content: Text('¿Quieres confirmar esta selección?'),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pop(); // Cierra el pop-up
+                                        },
+                                        child: Text('Cancelar'),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          // Acción que se ejecuta al confirmar
+                                          print('Selección confirmada');
+                                          _model.buttonPressed.forEach((key, value){
+                                            if(value == true && _model.jsonData?[dateTimeFormat("d/M/y", _model.datePicked).toString()][_model.salaFormValue].containsKey(key)){
+                                              _model.jsonData?[dateTimeFormat("d/M/y", _model.datePicked).toString()][_model.salaFormValue][key] = "No";
+                                            }
+                                          });
+                                          print(_model.buttonPressed);
+                                          print(_model.jsonData?[dateTimeFormat("d/M/y", _model.datePicked).toString()][_model.salaFormValue]);
+                                          Navigator.of(context).pop(); // Cierra el pop-up
+                                        },
+                                        child: Text('Confirmar'),
+                                      ),
+                                    ],
                                   );
                                 },
-                              ).then((value) => safeSetState(() {}));
+                              );
                             },
                             text: 'Aceptar',
                             options: FFButtonOptions(

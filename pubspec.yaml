@@ -110,7 +110,7 @@ flutter:
     - assets/audios/
     - assets/rive_animations/
     - assets/pdfs/
-    - assets/jsons/
+    - assets/jsons/reservas_salas.json
 
 
 
