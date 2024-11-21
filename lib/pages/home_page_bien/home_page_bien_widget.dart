@@ -79,6 +79,12 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
 
       print("Horas eliminadas correctamente: $selectedHours");
       _model.dbData= null;
+      _model.nameFormTextController?.clear();
+      _model.surnameFormTextController?.clear();
+      _model.emailFormTextController?.clear();
+      _model.phoneFormTextController?.clear();
+      _model.datePicked = null;
+      _model.salaFormValue = null;
     } catch (e) {
       print("Error al eliminar las horas: $e");
     }
