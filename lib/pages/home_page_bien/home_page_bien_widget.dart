@@ -21,6 +21,13 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 
+//Imports para firebase
+//Firebase:
+import 'firebase_options.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+
+
 class HomePageBienWidget extends StatefulWidget {
   const HomePageBienWidget({super.key});
 
@@ -32,19 +39,67 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
   late HomePageBienModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
-  
-  // Método para cargar y guardar el JSON en la variable
-  Future<void> cargarJson(String path) async {
-    try {
-      // Cargar el contenido del archivo JSON como una cadena
-      String jsonString = await rootBundle.loadString(path);
 
-      // Decodificar la cadena JSON a un mapa
-      _model.jsonData = json.decode(jsonString);
+  Future<List<dynamic>> fetchRoomHours(String date, String room) async {
+    try {
+      // Obtén el documento específico por fecha
+      print(date);
+      print(room);
+      DocumentSnapshot snapshot = await FirebaseFirestore.instance
+          .collection('aulas')
+          .doc(date)
+          .get();
+      
+      if (snapshot.exists) {
+        // Accede al campo de la sala específica
+        Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
+
+        if (data.containsKey(room)) {
+          print(data[room]);
+          return data[room] as List<dynamic>;
+        } else {
+          throw Exception('La sala no existe en este documento.');
+        }
+      } else {
+        throw Exception('No existe un documento para esta fecha.');
+      }
     } catch (e) {
-      print("Error al cargar el JSON: $e");
+      print('Error al leer los datos: $e');
+      return [];
     }
   }
+  Future<void> removeSelectedHours(String date, String room, List<dynamic>? selectedHours) async {
+    try {
+      DocumentReference docRef = FirebaseFirestore.instance.collection('aulas').doc(date);
+
+      // Elimina las horas seleccionadas de la lista
+      await docRef.update({
+        room: FieldValue.arrayRemove(selectedHours!),
+      });
+
+      print("Horas eliminadas correctamente: $selectedHours");
+      _model.dbData= null;
+    } catch (e) {
+      print("Error al eliminar las horas: $e");
+    }
+  }
+
+
+
+  // Método para cargar y guardar el JSON en la variable
+  //Future<void> cargarJson(String path) async {
+  //  try {
+  //    // Cargar el contenido del archivo JSON como una cadena
+  //    String jsonString = await rootBundle.loadString(path);
+//
+  //    // Decodificar la cadena JSON a un mapa
+  //    _model.dbData = json.decode(jsonString);
+  //  } catch (e) {
+  //    print("Error al cargar el JSON: $e");
+  //  }
+  //}
+
+  
 
   @override
   void initState() {
@@ -629,7 +684,7 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
                                             _model.salaFormValue == "Sala 2" || 
                                             _model.salaFormValue == "Sala 3") &&
                                             (_model.datePicked != null)) {
-                                          await cargarJson("jsons/reservas_salas.json");
+                                          _model.dbData = await fetchRoomHours(dateTimeFormat("d-M-y", _model.datePicked).toString(), _model.salaFormValue.toString());
                                         }
                                       },
                                       width: 145.0,
@@ -722,7 +777,7 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
                                             _model.salaFormValue == "Sala 2" || 
                                             _model.salaFormValue == "Sala 3") &&
                                             (_model.datePicked != null)) {
-                                          await cargarJson("jsons/reservas_salas.json");
+                                          _model.dbData = await fetchRoomHours(dateTimeFormat("d-M-y", _model.datePicked).toString(), _model.salaFormValue.toString());
                                         }
                                       }
                                       FFAppState().selectedDate =
@@ -822,21 +877,17 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
                                                     verticalDirection:
                                                         VerticalDirection.down,
                                                     clipBehavior: Clip.none,
-                                                    children: (_model.jsonData == null || 
-                                                                _model.jsonData?[dateTimeFormat("d/M/y", _model.datePicked).toString()] == null || 
-                                                                _model.jsonData?[dateTimeFormat("d/M/y", _model.datePicked).toString()][_model.salaFormValue] == null)
+                                                    children: (_model.dbData == null)
                                                           ? [] // Si _model.jsonData o los datos relacionados son nulos, no hay hijos
-                                                          : _model.jsonData?[dateTimeFormat("d/M/y", _model.datePicked).toString()][_model.salaFormValue]
-                                                              .entries
-                                                              .where((entry) => entry.value == "Si") // Filtrar los casos con "Si"
-                                                              .map<Widget>((entry) {
-                                                                bool isPressed = _model.buttonPressed[entry.key] ?? false;
+                                                          : _model.dbData!
+                                                            .map<Widget>((hour) {
+                                                              bool isPressed = _model.buttonPressed[hour] ?? false;
 
                                                                 return ElevatedButton(
                                                                   onPressed: () {
                                                                     setState(() {
                                                                       // Cambiar el estado de presionado
-                                                                      _model.buttonPressed[entry.key] = !isPressed;
+                                                                      _model.buttonPressed[hour] = !isPressed;
                                                                     });
                                                                   },
                                                                   style: ElevatedButton.styleFrom(
@@ -847,7 +898,7 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
                                                                     elevation: 5, // Agregar elevación para efecto de sombreado
                                                                     splashFactory: InkSplash.splashFactory, // Efecto de la pulsación
                                                                   ),
-                                                                  child: Text(entry.key), // Mostrar la hora como texto del botón
+                                                                  child: Text(hour), // Mostrar la hora como texto del botón
                                                                 );
                                                               }).toList(),
                                                   ),
@@ -926,13 +977,7 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
                                         onPressed: () {
                                           // Acción que se ejecuta al confirmar
                                           print('Selección confirmada');
-                                          _model.buttonPressed.forEach((key, value){
-                                            if(value == true && _model.jsonData?[dateTimeFormat("d/M/y", _model.datePicked).toString()][_model.salaFormValue].containsKey(key)){
-                                              _model.jsonData?[dateTimeFormat("d/M/y", _model.datePicked).toString()][_model.salaFormValue][key] = "No";
-                                            }
-                                          });
-                                          print(_model.buttonPressed);
-                                          print(_model.jsonData?[dateTimeFormat("d/M/y", _model.datePicked).toString()][_model.salaFormValue]);
+                                          removeSelectedHours(dateTimeFormat("d-M-y", _model.datePicked).toString(), _model.salaFormValue.toString(), _model.dbData);
                                           Navigator.of(context).pop(); // Cierra el pop-up
                                         },
                                         child: Text('Confirmar'),

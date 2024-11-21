@@ -83,9 +83,10 @@ class HomePageBienModel extends FlutterFlowModel<HomePageBienWidget> {
   String? salaFormValue;
   FormFieldController<String>? salaFormValueController;
   DateTime? datePicked;
-  Map<String, dynamic>? jsonData;
+  List<dynamic>? dbData;
   String? horaSeleccionada;
   Map<String, bool> buttonPressed = {};
+
 
   @override
   void initState(BuildContext context) {
