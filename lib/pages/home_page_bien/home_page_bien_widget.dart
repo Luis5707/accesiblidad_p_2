@@ -89,8 +89,10 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
   void restablecerValores(){
     /*Funcion que restablece a por defecto los valores*/
     // Restablecer valores del modelo
-    _model.salaSelected = "Sala";
-    _model.dbData = null;
+    //_model.salaSelected = "Sala";
+    print("La lista antes ${_model.dbData}");
+    _model.dbData!.clear();
+    print("La lista despues ${_model.dbData}");
 
     // Restablecer controladores de texto si existen
     _model.nameFormTextController?.clear();
@@ -100,35 +102,22 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
 
     // Restablecer fecha seleccionada
     _model.datePicked = null;
+    print("SelectedDate antes ${FFAppState().selectedDate}");
     FFAppState().selectedDate = null;
+    print("SelectedDate después ${FFAppState().selectedDate}");
 
     // Restablecer dropdown (asegúrate de manejar el estado correctamente)
-    //_model.salaFormValueController?.value = '0';
-    _model.salaFormValueController = FormFieldController<String>(null);
-    _model.salaFormValue = null;
-
+    _model.salaFormValueController?.value = '0';
+    //_model.salaFormValueController = FormFieldController<String>(null);
+    _model.salaFormValue = "Sala";
+    
+    safeSetState(() {});
+    
     // Verifica el estado después de restablecer
     print("Valores restablecidos");
     print("dbData: ${_model.dbData}");
-    print("Sala seleccionada: ${_model.salaSelected}");
-  }
-
-
-
-  // Método para cargar y guardar el JSON en la variable
-  //Future<void> cargarJson(String path) async {
-  //  try {
-  //    // Cargar el contenido del archivo JSON como una cadena
-  //    String jsonString = await rootBundle.loadString(path);
-//
-  //    // Decodificar la cadena JSON a un mapa
-  //    _model.dbData = json.decode(jsonString);
-  //  } catch (e) {
-  //    print("Error al cargar el JSON: $e");
-  //  }
-  //}
-
-  
+    //print("Sala seleccionada: ${_model.salaSelected}");
+  } 
 
   @override
   void initState() {
@@ -706,8 +695,9 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
                                       options: ['Sala 1', 'Sala 2', 'Sala 3'],
                                       onChanged: (val) async {
                                         safeSetState(() {
-                                          _model.salaSelected = val;
-                                          _model.salaFormValue = _model.salaSelected;
+                                          _model.salaFormValue = val;
+                                          print("SalaformValue: ${_model.salaFormValue}");
+                                          print ("val:  $val");
                                         });
                                         // Verifica las condiciones y llama a cargarJson
                                         if ((_model.salaFormValue == "Sala 1" || 
@@ -715,6 +705,8 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
                                             _model.salaFormValue == "Sala 3") &&
                                             (_model.datePicked != null)) {
                                           _model.dbData = await fetchRoomHours(dateTimeFormat("d-M-y", _model.datePicked).toString(), _model.salaFormValue.toString());
+                                          safeSetState(() {});
+                                          print("Los horarios disponibles son ${_model.dbData}");
                                         }
                                       },
                                       width: 145.0,
@@ -983,8 +975,8 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
                               safeSetState(() {
                                 // Valores de texto
                                 restablecerValores();
-                                _model.salaFormValueController?.value = '0';
-                                FFAppState().selectedDate = null;
+                                //_model.salaFormValueController?.value = '0';
+                                //FFAppState().selectedDate = null;
                               });
                             },
                             text: 'Borrar todo',
