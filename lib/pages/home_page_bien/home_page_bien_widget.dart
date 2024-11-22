@@ -78,16 +78,39 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
       });
 
       print("Horas eliminadas correctamente: $selectedHours");
-      _model.dbData= null;
-      _model.nameFormTextController?.clear();
-      _model.surnameFormTextController?.clear();
-      _model.emailFormTextController?.clear();
-      _model.phoneFormTextController?.clear();
-      _model.datePicked = null;
-      _model.salaFormValue = null;
+      // Restablecer los valores por defecto
+      restablecerValores();
+      print("Aceptado y restablecido todo");
     } catch (e) {
       print("Error al eliminar las horas: $e");
     }
+  }
+
+  void restablecerValores(){
+    /*Funcion que restablece a por defecto los valores*/
+    // Restablecer valores del modelo
+    _model.salaSelected = "Sala";
+    _model.dbData = null;
+
+    // Restablecer controladores de texto si existen
+    _model.nameFormTextController?.clear();
+    _model.surnameFormTextController?.clear();
+    _model.emailFormTextController?.clear();
+    _model.phoneFormTextController?.clear();
+
+    // Restablecer fecha seleccionada
+    _model.datePicked = null;
+    FFAppState().selectedDate = null;
+
+    // Restablecer dropdown (asegúrate de manejar el estado correctamente)
+    //_model.salaFormValueController?.value = '0';
+    _model.salaFormValueController = FormFieldController<String>(null);
+    _model.salaFormValue = null;
+
+    // Verifica el estado después de restablecer
+    print("Valores restablecidos");
+    print("dbData: ${_model.dbData}");
+    print("Sala seleccionada: ${_model.salaSelected}");
   }
 
 
@@ -683,7 +706,8 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
                                       options: ['Sala 1', 'Sala 2', 'Sala 3'],
                                       onChanged: (val) async {
                                         safeSetState(() {
-                                          _model.salaFormValue = val;
+                                          _model.salaSelected = val;
+                                          _model.salaFormValue = _model.salaSelected;
                                         });
                                         // Verifica las condiciones y llama a cargarJson
                                         if ((_model.salaFormValue == "Sala 1" || 
@@ -883,8 +907,20 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
                                                     verticalDirection:
                                                         VerticalDirection.down,
                                                     clipBehavior: Clip.none,
-                                                    children: (_model.dbData == null)
-                                                          ? [] // Si _model.jsonData o los datos relacionados son nulos, no hay hijos
+                                                    children: (_model.dbData == null ||_model.dbData!.isEmpty)
+                                                          ? [
+                                                            Container(
+                                                              padding: EdgeInsets.all(16.0),
+                                                              child: Text(
+                                                                "No hay horarios disponibles",
+                                                                style: TextStyle(
+                                                                  fontSize: 16.0,
+                                                                  color: Colors.black,
+                                                                ),
+                                                                textAlign: TextAlign.center,
+                                                              ),
+                                                            ),
+                                                          ] // Si _model.jsonData o los datos relacionados son nulos, no hay hijos
                                                           : _model.dbData!
                                                             .map<Widget>((hour) {
                                                               bool isPressed = _model.buttonPressed[hour] ?? false;
@@ -894,12 +930,25 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
                                                                     setState(() {
                                                                       // Cambiar el estado de presionado
                                                                       _model.buttonPressed[hour] = !isPressed;
+                                                                      print("Hora seleccions $hour");
+                                                                      
+                                                                      if (!_model.selectedHours!.contains(hour) && _model.buttonPressed[hour] == true){
+                                                                        //Guardar la hora
+                                                                        print("Guardar la hora $hour");
+                                                                        _model.selectedHours!.add(hour);
+                                                                        }
+                                                                      else if (_model.selectedHours!.contains(hour) && _model.buttonPressed[hour] == false) {
+                                                                        print("Elimino la hora $hour");
+                                                                        _model.selectedHours!.remove(hour);
+                                                                      }
                                                                     });
+                                                                    
                                                                   },
                                                                   style: ElevatedButton.styleFrom(
                                                                     backgroundColor: isPressed
                                                                         ? Colors.grey // Color oscuro cuando se presiona
-                                                                        : FlutterFlowTheme.of(context).primary, // Color de fondo normal
+                                                                        : Colors.red, 
+                                                                        //FlutterFlowTheme.of(context).primary, // Color de fondo normal
                                                                     foregroundColor: Colors.white, // Color del texto
                                                                     elevation: 5, // Agregar elevación para efecto de sombreado
                                                                     splashFactory: InkSplash.splashFactory, // Efecto de la pulsación
@@ -932,20 +981,13 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
                             onPressed: () async {
                               // CleanInformacionPersonal
                               safeSetState(() {
-                                _model.nameFormTextController?.clear();
-                                _model.surnameFormTextController?.clear();
-                                _model.emailFormTextController?.clear();
-                                _model.phoneFormTextController?.clear();
-                                _model.datePicked = null;
-                                _model.salaFormValue = null;
-                              });
-                              FFAppState().selectedDate = null;
-                              safeSetState(() {});
-                              safeSetState(() {
+                                // Valores de texto
+                                restablecerValores();
                                 _model.salaFormValueController?.value = '0';
+                                FFAppState().selectedDate = null;
                               });
                             },
-                            text: 'Borrar Todo',
+                            text: 'Borrar todo',
                             options: FFButtonOptions(
                               height: 40.0,
                               padding: EdgeInsetsDirectional.fromSTEB(
@@ -983,7 +1025,7 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
                                         onPressed: () {
                                           // Acción que se ejecuta al confirmar
                                           print('Selección confirmada');
-                                          removeSelectedHours(dateTimeFormat("d-M-y", _model.datePicked).toString(), _model.salaFormValue.toString(), _model.dbData);
+                                          removeSelectedHours(dateTimeFormat("d-M-y", _model.datePicked).toString(), _model.salaFormValue.toString(), _model.selectedHours);
                                           Navigator.of(context).pop(); // Cierra el pop-up
                                         },
                                         child: Text('Confirmar'),
