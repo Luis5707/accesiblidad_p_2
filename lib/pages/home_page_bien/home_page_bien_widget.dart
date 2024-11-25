@@ -42,6 +42,9 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
 
   Future<List<dynamic>> fetchRoomHours(String date, String room) async {
     try {
+      // Restablecer las horas seleccionadas, solo se puede seleccionar para un dia en concreto
+      _model.selectedHours!.clear();
+
       // Obtén el documento específico por fecha
       print(date);
       print(room);
@@ -92,6 +95,7 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
     //_model.salaSelected = "Sala";
     print("La lista antes ${_model.dbData}");
     _model.dbData!.clear();
+    _model.selectedHours!.clear();
     print("La lista despues ${_model.dbData}");
 
     // Restablecer controladores de texto si existen
@@ -117,7 +121,84 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
     print("Valores restablecidos");
     print("dbData: ${_model.dbData}");
     //print("Sala seleccionada: ${_model.salaSelected}");
+  }
+  
+  bool isEmailValid(String? email) {
+    // Funcion que comprueba que el email tiene el formato correcto
+    if (email == null || email.isEmpty) return false;
+
+    // Expresión regular para validar el formato de correo electrónico
+    final regex = RegExp(r'^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+');
+    return regex.hasMatch(email);
   } 
+
+  bool areAllFieldsFilled() {
+    // Funcion que comprueba si uno de los campos a rellenar esta incompleto y por tanto, no debe hacer la reserva
+    
+    // Verificar si _model.dbData no está vacío
+    if (_model.dbData == null || _model.dbData!.isEmpty) {
+      return false;
+    }
+    
+    // Verificar si las horas seleccionadas no esta vacio
+    if (_model.selectedHours == null || _model.selectedHours!.isEmpty) {
+      return false;
+    }
+
+    // Verificar si _model.nameFormTextController tiene texto
+    if (_model.nameFormTextController?.text == null ||
+        _model.nameFormTextController!.text.isEmpty) {
+      return false;
+    }
+
+    // Verificar si _model.surnameFormTextController tiene texto
+    if (_model.surnameFormTextController?.text == null ||
+        _model.surnameFormTextController!.text.isEmpty) {
+      return false;
+    }
+
+    // Verificar si _model.salaFormValue tiene un valor válido
+    if (_model.salaFormValue == null || _model.salaFormValue == "Sala") {
+      return false;
+    }
+
+    // Verificar si FFAppState().selectedDate no está vacío
+    if (FFAppState().selectedDate == null) {
+      return false;
+    }
+
+    // Verificar si _model.emailFormTextController tiene texto
+    if (_model.emailFormTextController?.text == null ||
+        _model.emailFormTextController!.text.isEmpty) {
+      return false;
+    }
+
+    // Verificar si el email tiene un formato valido
+    if (!isEmailValid(_model.emailFormTextController?.text)) {
+      return false; // El correo no tiene un formato válido
+    }
+
+    // Verificar si _model.phoneFormTextController tiene texto
+    if (_model.phoneFormTextController?.text == null ||
+        _model.phoneFormTextController!.text.isEmpty) {
+      return false;
+    }
+
+    // Verificar si _model.phoneFormTextController tiene los digitos exactos
+    if (_model.phoneFormTextController?.text.length != 9){
+      return false;
+    }
+
+    // Verificar si _model.salaFormValueController tiene un valor válido
+    if (_model.salaFormValueController?.value == null ||
+        _model.salaFormValueController!.value == '0') {
+      return false;
+    }
+
+    // Si todas las condiciones pasan, devolver true
+    return true;
+  }
+
 
   @override
   void initState() {
@@ -915,14 +996,13 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
                                                           ] // Si _model.jsonData o los datos relacionados son nulos, no hay hijos
                                                           : _model.dbData!
                                                             .map<Widget>((hour) {
-                                                              bool isPressed = _model.buttonPressed[hour] ?? false;
-
+                                                              bool isPressed = (_model.buttonPressed[hour] ?? false) && (_model.selectedHours?.contains(hour) ?? false);
                                                                 return ElevatedButton(
                                                                   onPressed: () {
                                                                     setState(() {
                                                                       // Cambiar el estado de presionado
                                                                       _model.buttonPressed[hour] = !isPressed;
-                                                                      print("Hora seleccions $hour");
+                                                                      print("Hora seleccionada $hour");
                                                                       
                                                                       if (!_model.selectedHours!.contains(hour) && _model.buttonPressed[hour] == true){
                                                                         //Guardar la hora
@@ -937,7 +1017,7 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
                                                                     
                                                                   },
                                                                   style: ElevatedButton.styleFrom(
-                                                                    backgroundColor: isPressed
+                                                                    backgroundColor: (/*isPressed && _model.selectedHours!.isNotEmpty ||*/ _model.selectedHours!.contains(hour))    
                                                                         ? Colors.grey // Color oscuro cuando se presiona
                                                                         : Colors.red, 
                                                                         //FlutterFlowTheme.of(context).primary, // Color de fondo normal
@@ -1000,7 +1080,10 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
                           ),
                           FFButtonWidget(
                             onPressed: () async {
-                              showDialog(
+                              // Comprobar si se han completado todos los campos
+                              bool all_fields_filled = areAllFieldsFilled();
+                              if (all_fields_filled == true) {  // Campos completos
+                                showDialog(
                                 context: context,
                                 builder: (BuildContext context) {
                                   return AlertDialog(
@@ -1026,6 +1109,27 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
                                   );
                                 },
                               );
+                              }
+                              else{ // Campos vacios
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      title: Text('Fallo en la reserva'),
+                                      content: Text('Debe completar todos los campos'),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context).pop(); // Cierra el pop-up
+                                          },
+                                          child: Text('Aceptar'),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                              }
+                            
                             },
                             text: 'Aceptar',
                             options: FFButtonOptions(
