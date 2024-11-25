@@ -71,6 +71,7 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
       return [];
     }
   }
+  
   Future<void> removeSelectedHours(String date, String room, List<dynamic>? selectedHours) async {
     try {
       DocumentReference docRef = FirebaseFirestore.instance.collection('aulas').doc(date);
@@ -89,10 +90,39 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
     }
   }
 
+  Future<void> crearOActualizarUsuario() async {
+    // Definir las variables
+    String email = _model.emailFormTextController!.text;
+    String nombre = _model.nameFormTextController!.text;
+    String apellidos = _model.surnameFormTextController!.text;
+    String telefono = _model.phoneFormTextController!.text;
+    String? salaSeleccionada = _model.salaFormValue;
+    DateTime? fechaSeleccionada = FFAppState().selectedDate;
+    List? horasSeleccionadas = _model.selectedHours;
+
+    // Obtén una referencia a la colección 'usuarios'
+    CollectionReference usuarios = FirebaseFirestore.instance.collection('usuarios');
+    
+    // Crea el documento con el ID del email (si no existe)
+    DocumentReference usuarioDoc = usuarios.doc(email);
+
+    // Usamos .set() para crear o sobrescribir el documento
+    await usuarioDoc.set({
+      'nombre': nombre,
+      'apellidos': apellidos,
+      'telefono': telefono,
+      'salaSeleccionada': salaSeleccionada,
+      'fechaSeleccionada': fechaSeleccionada,
+      'horasSeleccionadas': horasSeleccionadas,
+    }, SetOptions(merge: true)); // merge: true garantiza que se sobrescriban los datos
+
+    print('Documento de usuario creado o actualizado');
+  }
+
+
   void restablecerValores(){
     /*Funcion que restablece a por defecto los valores*/
     // Restablecer valores del modelo
-    //_model.salaSelected = "Sala";
     print("La lista antes ${_model.dbData}");
     _model.dbData!.clear();
     _model.selectedHours!.clear();
@@ -112,7 +142,6 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
 
     // Restablecer dropdown (asegúrate de manejar el estado correctamente)
     _model.salaFormValueController?.value = '0';
-    //_model.salaFormValueController = FormFieldController<String>(null);
     _model.salaFormValue = "Sala";
     
     safeSetState(() {});
@@ -120,7 +149,6 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
     // Verifica el estado después de restablecer
     print("Valores restablecidos");
     print("dbData: ${_model.dbData}");
-    //print("Sala seleccionada: ${_model.salaSelected}");
   }
   
   bool isEmailValid(String? email) {
@@ -198,7 +226,6 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
     // Si todas las condiciones pasan, devolver true
     return true;
   }
-
 
   @override
   void initState() {
@@ -1051,12 +1078,10 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
                         children: [
                           FFButtonWidget(
                             onPressed: () async {
-                              // CleanInformacionPersonal
+
                               safeSetState(() {
                                 // Valores de texto
                                 restablecerValores();
-                                //_model.salaFormValueController?.value = '0';
-                                //FFAppState().selectedDate = null;
                               });
                             },
                             text: 'Borrar todo',
@@ -1101,6 +1126,7 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
                                           // Acción que se ejecuta al confirmar
                                           print('Selección confirmada');
                                           removeSelectedHours(dateTimeFormat("d-M-y", _model.datePicked).toString(), _model.salaFormValue.toString(), _model.selectedHours);
+                                          crearOActualizarUsuario();
                                           Navigator.of(context).pop(); // Cierra el pop-up
                                         },
                                         child: Text('Confirmar'),
