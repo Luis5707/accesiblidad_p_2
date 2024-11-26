@@ -19,6 +19,7 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart'; 
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:async';
 
 
 //Imports para firebase
@@ -1128,6 +1129,25 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
                                           removeSelectedHours(dateTimeFormat("d-M-y", _model.datePicked).toString(), _model.salaFormValue.toString(), _model.selectedHours);
                                           crearOActualizarUsuario();
                                           Navigator.of(context).pop(); // Cierra el pop-up
+                                          
+                                          // Mostrar un mensaje de retroalimentacion para informar al usuario que su reserva ha sido realizada
+                                            showDialog(
+                                              context: context,
+                                              builder: (BuildContext context) {
+                                                return AlertDialog(
+                                                  title: Text("Operación Completada"),
+                                                  content: Text("La acción se realizó exitosamente."),
+                                                  actions: [
+                                                    TextButton(
+                                                      onPressed: () {
+                                                        Navigator.of(context).pop(); // Cierra el segundo diálogo
+                                                      },
+                                                      child: Text("Aceptar"),
+                                                    ),
+                                                  ],
+                                                );
+                                              },                                              
+                                          );
                                         },
                                         child: Text('Confirmar'),
                                       ),
