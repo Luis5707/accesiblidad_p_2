@@ -14,7 +14,6 @@ import 'platform_utils/platform_util.dart';
 
 import '../main.dart';
 
-import 'lat_lng.dart';
 
 export 'lat_lng.dart';
 export 'place.dart';

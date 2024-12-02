@@ -3,7 +3,6 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
-import '/pages/reserva_pop_up/reserva_pop_up_widget.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -14,9 +13,6 @@ import 'home_page_bien_model.dart';
 export 'home_page_bien_model.dart';
 
 // Imports para la lectura de jsons
-import 'dart:convert';
-import 'dart:io';
-import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart'; 
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
@@ -24,7 +20,6 @@ import 'dart:async';
 
 //Imports para firebase
 //Firebase:
-import 'firebase_options.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 
@@ -415,6 +410,7 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
                                                       .secondaryBackground,
                                               prefixIcon: Icon(
                                                 Icons.person,
+                                                color: FlutterFlowTheme.of(context).secondaryText
                                               ),
                                             ),
                                             style: FlutterFlowTheme.of(context)
@@ -620,6 +616,7 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
                                                     .secondaryBackground,
                                             prefixIcon: Icon(
                                               Icons.email_outlined,
+                                              color: FlutterFlowTheme.of(context).secondaryText,
                                             ),
                                           ),
                                           style: FlutterFlowTheme.of(context)
@@ -732,6 +729,7 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
                                                     .primary,
                                             prefixIcon: Icon(
                                               Icons.phone_sharp,
+                                              color: FlutterFlowTheme.of(context).secondaryText,
                                             ),
                                           ),
                                           style: FlutterFlowTheme.of(context)
@@ -825,6 +823,8 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
                                           .override(
                                             fontFamily: 'Inter',
                                             letterSpacing: 0.0,
+                                            color: FlutterFlowTheme.of(context)
+                                            .secondaryText,
                                           ),
                                       hintText: 'Sala',
                                       icon: Icon(
