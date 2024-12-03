@@ -326,7 +326,7 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
                                     mainAxisSize: MainAxisSize.max,
                                     children: [
                                       Expanded(
-                                        child: Container(
+                                        child: SizedBox(
                                           width: 200.0,
                                           child: TextFormField(
                                             controller:
@@ -434,7 +434,7 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
                                         ),
                                       ),
                                       Expanded(
-                                        child: Container(
+                                        child: SizedBox(
                                           width: 200.0,
                                           child: TextFormField(
                                             controller: _model
@@ -545,7 +545,7 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
                                   mainAxisSize: MainAxisSize.max,
                                   children: [
                                     Expanded(
-                                      child: Container(
+                                      child: SizedBox(
                                         width: 200.0,
                                         child: TextFormField(
                                           controller:
@@ -641,7 +641,7 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
                                   mainAxisSize: MainAxisSize.max,
                                   children: [
                                     Expanded(
-                                      child: Container(
+                                      child: SizedBox(
                                         width: 200.0,
                                         child: TextFormField(
                                           controller:
@@ -849,11 +849,12 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
                                   ),
                                   FFButtonWidget(
                                     onPressed: () async {
-                                      final _datePickedDate =
+                                      final datePickedDate =
                                           await showDatePicker(
                                         context: context,
                                         initialDate: getCurrentTimestamp,
                                         firstDate: getCurrentTimestamp,
+                                        locale: const Locale('es'),
                                         lastDate: DateTime(2050),
                                         builder: (context, child) {
                                           return wrapInMaterialDatePickerTheme(
@@ -895,12 +896,12 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
                                         },
                                       );
 
-                                      if (_datePickedDate != null) {
+                                      if (datePickedDate != null) {
                                         safeSetState(() {
                                           _model.datePicked = DateTime(
-                                            _datePickedDate.year,
-                                            _datePickedDate.month,
-                                            _datePickedDate.day,
+                                            datePickedDate.year,
+                                            datePickedDate.month,
+                                            datePickedDate.day,
                                           );
                                         });
                                         // Verifica las condiciones y llama a cargarJson
@@ -957,7 +958,7 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
                                       alignment:
                                           AlignmentDirectional(-1.0, 0.0),
                                       child: Text(
-                                        'Horarios disponibles',
+                                        'Seleccione el horario para la sala',
                                         textAlign: TextAlign.start,
                                         style: FlutterFlowTheme.of(context)
                                             .bodyMedium
@@ -1107,8 +1108,8 @@ class _HomePageBienWidgetState extends State<HomePageBienWidget> {
                           FFButtonWidget(
                             onPressed: () async {
                               // Comprobar si se han completado todos los campos
-                              bool all_fields_filled = areAllFieldsFilled();
-                              if (all_fields_filled == true) {  // Campos completos
+                              bool allFieldsFilled = areAllFieldsFilled();
+                              if (allFieldsFilled == true) {  // Campos completos
                                 showDialog(
                                 context: context,
                                 builder: (BuildContext context) {

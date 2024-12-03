@@ -1,7 +1,20 @@
-2024/11/25-09:45:39.021 10c Reusing MANIFEST C:\Users\luisp\AppData\Local\Temp\flutter_tools.58b1b56\flutter_tools_chrome_device.f81fcf0a\Default\Site Characteristics Database/MANIFEST-000001
-2024/11/25-09:45:39.033 10c Recovering log #10
-2024/11/25-09:45:39.034 10c Reusing old log C:\Users\luisp\AppData\Local\Temp\flutter_tools.58b1b56\flutter_tools_chrome_device.f81fcf0a\Default\Site Characteristics Database/000010.log 
-2024/11/25-09:45:39.037 10c Delete type=0 #3
-2024/11/25-09:45:39.037 10c Delete type=2 #4
-2024/11/25-09:45:39.037 10c Delete type=2 #6
-2024/11/25-09:45:39.038 10c Delete type=0 #6
+2024/12/03-10:10:20.857 2ea4 Reusing MANIFEST C:\Users\Admin\AppData\Local\Temp\flutter_tools.e24fcadc\flutter_tools_chrome_device.8746af15\Default\Site Characteristics Database/MANIFEST-000001
+2024/12/03-10:10:20.859 2ea4 Recovering log #3
+2024/12/03-10:10:20.860 2ea4 Level-0 table #22: started
+2024/12/03-10:10:20.863 2ea4 Level-0 table #22: 194 bytes OK
+2024/12/03-10:10:20.863 2ea4 Recovering log #6
+2024/12/03-10:10:20.864 2ea4 Level-0 table #23: started
+2024/12/03-10:10:20.867 2ea4 Level-0 table #23: 258 bytes OK
+2024/12/03-10:10:20.867 2ea4 Recovering log #10
+2024/12/03-10:10:20.867 2ea4 Level-0 table #24: started
+2024/12/03-10:10:20.872 2ea4 Level-0 table #24: 630 bytes OK
+2024/12/03-10:10:20.872 2ea4 Recovering log #19
+2024/12/03-10:10:20.872 2ea4 Reusing old log C:\Users\Admin\AppData\Local\Temp\flutter_tools.e24fcadc\flutter_tools_chrome_device.8746af15\Default\Site Characteristics Database/000019.log 
+2024/12/03-10:10:20.875 2ea4 Delete type=0 #3
+2024/12/03-10:10:20.875 2ea4 Delete type=2 #4
+2024/12/03-10:10:20.875 2ea4 Delete type=2 #6
+2024/12/03-10:10:20.876 2ea4 Delete type=0 #6
+2024/12/03-10:10:20.876 2ea4 Delete type=0 #10
+2024/12/03-10:10:20.876 2ea4 Delete type=2 #11
+2024/12/03-10:10:20.876 2ea4 Delete type=2 #13
+2024/12/03-10:10:20.876 2ea4 Delete type=2 #14

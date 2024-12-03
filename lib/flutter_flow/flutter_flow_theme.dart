@@ -25,11 +25,7 @@ abstract class FlutterFlowTheme {
       : _prefs?.setBool(kThemeModeKey, mode == ThemeMode.dark);
 
   static FlutterFlowTheme of(BuildContext context) {
-    /*return LightModeTheme();*/
-    /*Descomentar esto y comentar lo de arriba para que tenga en cuenta el modo del dispositivo al elegir el modo de la web*/
-    return Theme.of(context).brightness == Brightness.dark
-        ? DarkModeTheme()
-        : LightModeTheme();
+    return LightModeTheme();
   }
 
   @Deprecated('Use primary instead')
